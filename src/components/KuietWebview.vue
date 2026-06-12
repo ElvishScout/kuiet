@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { invoke } from "@tauri-apps/api/core";
-import { getCurrentWebview, getAllWebviews } from "@tauri-apps/api/webview";
+import { getAllWebviews } from "@tauri-apps/api/webview";
 
 interface WebviewInit {
   url?: string;
