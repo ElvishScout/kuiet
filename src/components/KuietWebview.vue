@@ -5,6 +5,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { invoke } from "@tauri-apps/api/core";
+import { getAllWebviews } from "@tauri-apps/api/webview";
 
 interface WebviewInit {
   url?: string;
@@ -16,7 +17,16 @@ interface WebviewConfig {
   width?: number;
   height?: number;
   visibility?: boolean;
+  focused?: boolean;
   url?: string;
+}
+
+interface WebviewStatus {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  visibility?: boolean;
 }
 
 const props = defineProps<{
@@ -42,30 +52,75 @@ async function destroyWebview(wid: string) {
   await invoke("destroy_webview", { wid });
 }
 
-let lastConfig: WebviewConfig = {};
+let lastStatus: WebviewStatus = {};
 
-function boundDiff() {
+function statusDiff(options?: Partial<Record<keyof WebviewStatus, boolean>>) {
   if (!divRef.value) {
     return null;
   }
 
-  const rect = divRef.value.getBoundingClientRect();
-  const diff: WebviewConfig = {};
+  options ??= {
+    x: true,
+    y: true,
+    width: true,
+    height: true,
+    visibility: true,
+  };
 
-  if (rect.x !== lastConfig.x) diff.x = lastConfig.x = rect.x;
-  if (rect.y !== lastConfig.y) diff.y = lastConfig.y = rect.y;
-  if (rect.width !== lastConfig.width) diff.width = lastConfig.width = rect.width;
-  if (rect.height !== lastConfig.height) diff.height = lastConfig.height = rect.height;
+  const status: WebviewStatus = {};
+
+  if (options.x || options.y || options.width || options.height) {
+    const rect = divRef.value.getBoundingClientRect();
+
+    if (options.x) status.x = rect.x;
+    if (options.y) status.y = rect.y;
+    if (options.width) status.width = rect.width;
+    if (options.height) status.height = rect.height;
+  }
+
+  if (options.visibility) {
+    let visibility = !props.invisible;
+
+    if (visibility) {
+      if ("checkVisibility" in Element.prototype) {
+        visibility = divRef.value.checkVisibility({ visibilityProperty: true });
+      } else {
+        const styles = divRef.value.computedStyleMap();
+        visibility =
+          !divRef.value.hidden && styles.get("display") !== "none" && styles.get("visibility") !== "invisible";
+      }
+    }
+
+    status.visibility = visibility;
+  }
+
+  const diff: WebviewStatus = {};
+
+  for (const _key in status) {
+    const key = _key as keyof WebviewStatus;
+
+    if (status[key] !== lastStatus[key]) {
+      diff[key] = status[key] as any;
+    }
+  }
 
   return diff;
 }
 
-async function syncBounds() {
-  const diff = boundDiff();
+async function syncConfig(options?: Partial<Record<keyof WebviewStatus, boolean>>) {
+  const diff = statusDiff(options);
 
   if (diff && Object.keys(diff).length > 0) {
+    Object.assign(lastStatus, diff);
     await configWebview(props.wid, diff);
   }
+}
+
+async function syncBoundsAndVisibility() {
+  const webviews = await getAllWebviews();
+  console.log(webviews);
+
+  await syncConfig({ x: true, y: true, width: true, height: true, visibility: true });
 }
 
 onMounted(async () => {
@@ -74,11 +129,11 @@ onMounted(async () => {
   await createWebview(props.wid, { url: props.url });
   created = true;
 
-  await configWebview(props.wid, { ...boundDiff(), visibility: !props.invisible });
+  await syncConfig();
 
-  resizeObserver = new ResizeObserver(syncBounds);
+  resizeObserver = new ResizeObserver(syncBoundsAndVisibility);
   resizeObserver.observe(divRef.value);
-  window.addEventListener("resize", syncBounds);
+  window.addEventListener("resize", syncBoundsAndVisibility);
 });
 
 watch(
@@ -94,7 +149,7 @@ watch(
 onBeforeUnmount(async () => {
   resizeObserver?.disconnect();
   resizeObserver = null;
-  window.removeEventListener("resize", syncBounds);
+  window.removeEventListener("resize", syncBoundsAndVisibility);
 
   if (created) {
     if (props.persist) {

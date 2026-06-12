@@ -18,6 +18,7 @@ pub struct WebviewConfig {
     pub x: Option<f64>,
     pub y: Option<f64>,
     pub visibility: Option<bool>,
+    pub focused: Option<bool>,
     pub url: Option<String>,
 }
 
@@ -44,7 +45,8 @@ async fn create_webview(app: AppHandle, wid: String, init: WebviewInit) -> Resul
         return Ok(());
     }
 
-    app.get_window("main")
+    let wv = app
+        .get_window("main")
         .ok_or("main window not found")?
         .add_child(
             WebviewBuilder::new(&wid, parse_url(&init.url)?),
@@ -121,6 +123,12 @@ async fn config_webview(app: AppHandle, wid: String, config: WebviewConfig) -> R
         Some(true) => wv.show().map_err(|e| format!("show: {}", e))?,
         Some(false) => wv.hide().map_err(|e| format!("hide: {}", e))?,
         None => {}
+    }
+
+    // ---- focus ----
+    match config.focused {
+        Some(true) => wv.set_focus().map_err(|e| format!("focus: {}", e))?,
+        _ => {}
     }
 
     // ---- url (skip if already there) ----

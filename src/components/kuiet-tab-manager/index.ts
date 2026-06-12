@@ -1,16 +1,17 @@
 import { Component, markRaw, reactive } from "vue";
 import { TabManagerContext } from "./types";
-import { nanoid } from "nanoid";
 
 export class TabManager {
+  counter: number;
   context: TabManagerContext;
 
   constructor() {
+    this.counter = 0;
     this.context = reactive({ tabs: [], index: -1, isHeaderReady: false });
   }
 
   create(component: Component, props: Record<string, any>) {
-    const id = nanoid();
+    const id = `tab-${this.counter++}`;
     this.context.tabs.push({ id, component: markRaw(component), props });
     return id;
   }

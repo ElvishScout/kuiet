@@ -1,16 +1,22 @@
 <template>
   <KuietTab>
-    <template #title>{{ title }}</template>
+    <template #title>{{ url }}</template>
   </KuietTab>
   <KuietWebview :wid="wid" :url="url"></KuietWebview>
 </template>
 
 <script setup lang="ts">
-import { nanoid } from "nanoid";
+import { inject } from "vue";
 import KuietTab from "../kuiet-tab-manager/KuietTab.vue";
 import KuietWebview from "../KuietWebview.vue";
 
-const wid = nanoid();
+const tabId = inject<string>("kuietTabId");
 
-const props = defineProps<{ title?: string; url?: string }>();
+if (tabId === undefined) {
+  throw "tabId must be provided";
+}
+
+const wid = `webview-browser-${tabId}`;
+
+const props = defineProps<{ url?: string }>();
 </script>

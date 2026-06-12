@@ -1,8 +1,6 @@
 <template>
   <teleport v-if="manager.context.isHeaderReady" :to="`#${teleportId}`">
-    <div class="kuiet-tab__title">
-      <slot name="title"></slot>
-    </div>
+    <slot name="title"></slot>
   </teleport>
   <div class="kuiet-tab__panel">
     <slot></slot>

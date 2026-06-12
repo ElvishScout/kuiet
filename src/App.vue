@@ -1,13 +1,14 @@
 <template>
   <div class="container">
-    <KuietTabHeader :manager="manager" />
+    <div class="tab-header-wrap" data-tauri-drag-region>
+      <KuietTabHeader class="tab-header" :manager="manager" />
+    </div>
     <KuietTabView class="tab-view" :manager="manager" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { markRaw, onMounted, ref } from "vue";
-import { nanoid } from "nanoid";
 
 import KuietWebview from "./components/KuietWebview.vue";
 import KuietTabHeader from "./components/kuiet-tab-manager/KuietTabHeader.vue";
@@ -19,7 +20,8 @@ import { TabManager } from "./components/kuiet-tab-manager/index.ts";
 const manager = new TabManager();
 
 onMounted(() => {
-  manager.createAndSelect(Browser, { title: "hello", url: "https://example.com" });
+  manager.createAndSelect(Browser, { url: "https://example.com" });
+  // manager.createAndSelect(Browser, { url: "https://www.bing.com" });
 });
 </script>
 
@@ -28,6 +30,17 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   width: 100%;
+  height: 100%;
+}
+
+.tab-header-wrap {
+  padding: 8px 12px 8px 108px;
+  height: 42px;
+  box-sizing: border-box;
+}
+
+.tab-header {
+  width: fit-content;
   height: 100%;
 }
 
