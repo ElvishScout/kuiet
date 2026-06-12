@@ -8,9 +8,8 @@
 </template>
 
 <script setup lang="ts">
-import { markRaw, onMounted, ref } from "vue";
+import { onMounted } from "vue";
 
-import KuietWebview from "./components/KuietWebview.vue";
 import KuietTabHeader from "./components/kuiet-tab-manager/KuietTabHeader.vue";
 import KuietTabView from "./components/kuiet-tab-manager/KuietTabView.vue";
 import Browser from "./components/tab-panels/Browser.vue";

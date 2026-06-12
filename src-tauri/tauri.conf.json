@@ -14,10 +14,7 @@
       {
         "title": "kuiet",
         "width": 800,
-        "height": 600,
-        "titleBarStyle": "Overlay",
-        "hiddenTitle": true,
-        "trafficLightPosition": { "x": 16, "y": 24 }
+        "height": 600
       }
     ],
     "security": {

@@ -45,8 +45,7 @@ async fn create_webview(app: AppHandle, wid: String, init: WebviewInit) -> Resul
         return Ok(());
     }
 
-    let wv = app
-        .get_window("main")
+    app.get_window("main")
         .ok_or("main window not found")?
         .add_child(
             WebviewBuilder::new(&wid, parse_url(&init.url)?),

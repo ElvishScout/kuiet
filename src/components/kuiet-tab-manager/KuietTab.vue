@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-import { inject, onMounted, provide, Teleport, useId } from "vue";
+import { inject, Teleport } from "vue";
 import { generateTeleportId } from "./utils";
 import type { TabManager } from ".";
 
